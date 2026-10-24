@@ -55,8 +55,11 @@ export function createKeyboardMotion(
   const revealTweens: gsap.core.Tween[] = [];
   const pending: gsap.core.Tween[] = [];
   const keyTweens: gsap.core.Tween[] = [];
+  let counterWanted = false;
+  let counterEnabled = false;
   const showCounter = (visible: boolean) => {
-    api.setNodeVisible(scene.counterId, visible);
+    counterWanted = visible;
+    api.setNodeVisible(scene.counterId, visible && counterEnabled);
     onActivity?.();
   };
   const inSkills = () => {
@@ -190,6 +193,12 @@ export function createKeyboardMotion(
   document.addEventListener("visibilitychange", onVisibility);
   api.setNodeVisible(scene.boardId, false);
   return {
+    // hide until socket connected + counts received
+    setCounterEnabled(enabled: boolean) {
+      if (disposed || enabled === counterEnabled) return;
+      counterEnabled = enabled;
+      showCounter(counterWanted);
+    },
     reveal() {
       if (revealed || disposed) return;
       revealed = true;

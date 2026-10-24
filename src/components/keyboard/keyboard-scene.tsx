@@ -122,6 +122,9 @@ export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
     motion.current = controller;
     return () => { controller.dispose(); motion.current = null; };
   }, [ready, loadVersion, scene, input, markActive]);
+  useEffect(() => {
+    motion.current?.setCounterEnabled(available);
+  }, [available, ready, loadVersion, scene, input, markActive]);
   // Rebind after each runtime load, once the replacement scene's nodes are mounted.
   useEffect(() => {
     if (ready && !isLoading) motion.current?.reveal();
