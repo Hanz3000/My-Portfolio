@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -9,6 +10,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { Socket } from "socket.io-client";
+import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { Loader2, Skull, Volume2, VolumeX, Trophy, X, Zap } from "lucide-react";
@@ -25,6 +27,7 @@ import { sfx } from "./engine/sfx";
 import { collectPlayerProfiles } from "./player-profile";
 import { MAX_PLAYERS, PLAYER_HP, ROOM_RE, WEAPONS, type GameJoinRequest } from "./protocol";
 import { roomUrl } from "./room-url";
+import { MatchNavigationGuard } from "./navigation-guard";
 
 const iconButtonClass =
   "grid size-[44px] place-items-center rounded text-[color:var(--game-muted)] transition-colors hover:bg-white/10 hover:text-[color:var(--game-text)]";
@@ -38,6 +41,8 @@ type Props = { socket: Socket; room: string | null; onRoomJoined: (room: string)
 export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameRef = useRef<Game | null>(null);
+  const navigationGuard = useRef<MatchNavigationGuard | null>(null);
+  const stayButton = useRef<HTMLButtonElement>(null);
   const [store] = useState(() => new HudStore());
   const hud = useSyncExternalStore(store.subscribe, store.get, store.get);
   const { users } = useContext(SocketContext);
@@ -47,8 +52,33 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
   const [request, setRequest] = useState<GameJoinRequest | null>(() => room !== null ? { mode: "join", room } : null);
   const reducedMotion = useReducedMotion();
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const [failedRunId, setFailedRunId] = useState<string | null>(null);
   const [muted, setMuted] = useState(sfx.muted);
+
+  const leaveMatch = useCallback(() => {
+    if (navigationGuard.current) navigationGuard.current.leave(onClose);
+    else onClose();
+  }, [onClose]);
+
+  const requestClose = useCallback(() => {
+    const current = store.get();
+    if (current.phase === "playing" && current.room !== null) setLeaveOpen(true);
+    else leaveMatch();
+  }, [store, leaveMatch]);
+
+  useEffect(() => {
+    const guard = new MatchNavigationGuard(window, requestClose);
+    navigationGuard.current = guard;
+    return () => {
+      guard.dispose();
+      navigationGuard.current = null;
+    };
+  }, [requestClose]);
+
+  useEffect(() => {
+    navigationGuard.current?.setActive(hud.phase === "playing" && hud.room !== null);
+  }, [hud.phase, hud.room]);
 
   useEffect(
     () => monitorGamePing(socket, (ping) => store.patch({ ping })),
@@ -62,7 +92,7 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
       onRoomJoined,
       ...renderProfile,
       hud: store,
-      onExit: onClose,
+      onExit: requestClose,
       profiles: new Map(),
     });
     gameRef.current = game;
@@ -70,7 +100,7 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
       game.dispose();
       gameRef.current = null;
     };
-  }, [socket, request, renderProfile, store, onClose, onRoomJoined]);
+  }, [socket, request, renderProfile, store, requestClose, onRoomJoined]);
 
   useEffect(() => {
     gameRef.current?.updateProfiles(profiles);
@@ -85,8 +115,8 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
   }, []);
 
   useEffect(() => {
-    gameRef.current?.suspendControls(leaderboardOpen);
-  }, [leaderboardOpen]);
+    gameRef.current?.suspendControls(leaderboardOpen || leaveOpen);
+  }, [leaderboardOpen, leaveOpen, request]);
 
   useEffect(() => {
     const failed = ({ runId }: { runId: string }) => setFailedRunId(runId);
@@ -123,7 +153,8 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
     >
       <canvas
         ref={canvasRef}
-        className="block h-full w-full cursor-crosshair touch-none"
+        tabIndex={-1}
+        className="block h-full w-full cursor-crosshair touch-none outline-none"
         aria-label="Survival arena. Move with WASD or arrow keys, aim and fire with the mouse, and press Space to dash."
       />
       {hud.hurt > 0 && (
@@ -186,9 +217,9 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
           </button>
           <button
             className={iconButtonClass}
-            onClick={onClose}
-            aria-label="Close game"
-            title="Close game"
+            onClick={requestClose}
+            aria-label={playing ? "Leave match" : "Close game"}
+            title={playing ? "Leave match" : "Close game"}
           >
             <X size={18} />
           </button>
@@ -403,6 +434,27 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
           onClose={() => setLeaderboardOpen(false)}
         />
       )}
+      <Dialog.Root open={leaveOpen} onOpenChange={setLeaveOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-[10002] bg-black/70" />
+          <Dialog.Content
+            className={cn(gameTheme, "fixed left-1/2 top-1/2 z-[10003] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-md bg-[color:var(--game-surface)] p-5 font-sans text-[color:var(--game-text)] focus:outline-none [&_button]:cursor-pointer [&_button]:touch-manipulation [&_button:focus-visible]:outline [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-4 [&_button:focus-visible]:outline-[color:var(--game-accent)]")}
+            data-lenis-prevent
+            data-no-custom-cursor="true"
+            onOpenAutoFocus={(event) => { event.preventDefault(); stayButton.current?.focus(); }}
+            onCloseAutoFocus={(event) => { event.preventDefault(); canvasRef.current?.focus(); }}
+          >
+            <Dialog.Title className="text-lg font-semibold">Leave this match?</Dialog.Title>
+            <Dialog.Description className={cn(mutedClass, "mt-2")}>
+              Leaving gives up your spot in this match. The game keeps running while you decide.
+            </Dialog.Description>
+            <Dialog.Close asChild>
+              <button ref={stayButton} type="button" className="mt-5 min-h-11 w-full rounded bg-[color:var(--game-accent)] px-3 py-2 text-sm font-semibold text-[color:var(--game-on-accent)] hover:bg-[color:var(--game-accent-hover)]">Stay in game</button>
+            </Dialog.Close>
+            <button type="button" onClick={leaveMatch} className={cn(secondaryButtonClass, "mt-2 w-full text-[color:var(--game-danger)]")}>Leave match</button>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

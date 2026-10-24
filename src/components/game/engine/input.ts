@@ -129,6 +129,7 @@ export class Input {
   };
 
   private onPointerDown = (e: PointerEvent) => {
+    if (this.suspended) return;
     if (e.pointerType === "touch") {
       this.touch = true;
       if (this.stickId !== -1) return;
@@ -147,6 +148,7 @@ export class Input {
   };
 
   private onPointerMove = (e: PointerEvent) => {
+    if (this.suspended) return;
     if (e.pointerType === "touch") {
       if (e.pointerId !== this.stickId) return;
       const dx = (e.clientX - this.stickOrigin.x) / STICK_RADIUS;
