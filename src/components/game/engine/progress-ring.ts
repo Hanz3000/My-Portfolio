@@ -6,12 +6,14 @@ export function makeProgressRing(innerRadius: number, outerRadius: number, color
   const group = new THREE.Group();
   const track = new THREE.Mesh(
     new THREE.RingGeometry(innerRadius, outerRadius, SEGMENTS).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.14, depthWrite: false, toneMapped: false }),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.14, depthTest: false, depthWrite: false, toneMapped: false, fog: false }),
   );
   const arc = new THREE.Mesh(
     track.geometry.clone(),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false, toneMapped: false }),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthTest: false, depthWrite: false, toneMapped: false, fog: false }),
   );
+  track.renderOrder = 8;
+  arc.renderOrder = 9;
   arc.position.y = 0.005;
   arc.geometry.computeBoundingSphere();
   group.add(track, arc);
