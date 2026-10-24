@@ -12,7 +12,7 @@ export const GameTrigger = ({ className }: { className?: string }) => {
     <Button
       variant="ghost"
       onClick={open}
-      aria-label="Play Zombie Survival"
+      aria-label={playing > 0 ? `Play Zombie Survival, ${playing} playing` : "Play Zombie Survival"}
       title={playing > 0 ? `Zombie Survival · ${playing} playing` : "Play Zombie Survival"}
       data-no-custom-cursor="true"
       className={cn(
