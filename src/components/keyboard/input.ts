@@ -38,7 +38,7 @@ export function createKeyInput(
       return () => { listeners.delete(listener); };
     },
     press(source: string, id: string) {
-      if (!byId.has(id) || heldBySource.get(source) === id) return;
+      if (!byId.has(id) || heldBySource.get(source) === id) return false;
       release(source);
       heldBySource.set(source, id);
       const sources = held.get(id) ?? new Set<string>();
@@ -46,6 +46,7 @@ export function createKeyInput(
       sources.add(source);
       held.set(id, sources);
       if (first) onChange(byId.get(id)!, true);
+      return true;
     },
     release,
     releaseAll() {

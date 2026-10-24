@@ -55,6 +55,14 @@ export function createKeyboardMotion(
   const revealTweens: gsap.core.Tween[] = [];
   const pending: gsap.core.Tween[] = [];
   const keyTweens: gsap.core.Tween[] = [];
+  const showCounter = (visible: boolean) => {
+    api.setNodeVisible(scene.counterId, visible);
+    onActivity?.();
+  };
+  const inSkills = () => {
+    const bounds = document.getElementById("skills")?.getBoundingClientRect();
+    return Boolean(bounds && bounds.top <= window.innerHeight * 0.5 && bounds.bottom > window.innerHeight * 0.2);
+  };
   const applyPose = () => {
     setTransform(scene.boardId, {
       position: array(position),
@@ -97,6 +105,7 @@ export function createKeyboardMotion(
       sectionTweens.push(gsap.to(value, { ...destination, duration: immediate ? 0 : 1, ease: "power1.out", overwrite: true, onUpdate: applyPose }));
     }
     api.setNodeVisible(scene.labelsId, next === "skills");
+    showCounter(next === "skills" && inSkills());
     if (next === "hero") {
       // The legacy restart() skips the configured 2.5s delay. Keep the live
       // rotation so leaving a partially completed spin never snaps to zero.
@@ -172,6 +181,10 @@ export function createKeyboardMotion(
       onEnter: () => { if (revealed) applySection(id); },
       onLeaveBack: () => { if (revealed) applySection(previous); },
     }));
+  if (document.getElementById("skills")) triggers.push(ScrollTrigger.create({
+    trigger: "#skills", start: "top 50%", end: "bottom 20%",
+    onToggle: ({ isActive }) => { if (revealed) showCounter(isActive && section === "skills"); },
+  }));
   const resize = () => { if (revealed) applySection(syncSection(), true); };
   window.addEventListener("resize", resize);
   document.addEventListener("visibilitychange", onVisibility);
@@ -208,6 +221,7 @@ export function createKeyboardMotion(
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", onVisibility);
       [scene.boardId, scene.spinId, scene.revealId, ...scene.keys.map((key) => key.motionId), ...scene.frameIds, scene.labelsId].forEach((id) => api.clearNodeOverrides(id));
+      api.clearNodeOverrides(scene.counterId);
       api.setNodeVisible(scene.catId, false);
     },
   };

@@ -1,4 +1,6 @@
 import headingMetrics from "./heading-metrics.json";
+import { addCounterModel, type CounterModel } from "./counter-model";
+import { createKeyWell } from "./key-well";
 import {
   createDocument, createMaterial, newId,
   type ChibiDocument, type ChibiMaterial, type ChibiNode, type Vec3,
@@ -34,11 +36,13 @@ export type KeyboardScene = {
   labelsId: string;
   defaultLabelId: string;
   pointerTargets: string[];
+  counter: CounterModel;
+  counterId: string;
 };
 
 // Geometry contract of assets/keyboard/keycaps.glb, in key-width units.
 const KIT = {
-  pitch: 1.04468, keyY: 1.29117, keyHeight: 0.7629, logoY: 0.13985,
+  pitch: 1.04468, keyY: 1.21117, keyHeight: 0.7629, logoY: 0.13985,
   keyTop: 0.13102987408638,
   cutX: 3.189, cutZ: 2.053, halfW: 3.67448, halfD: 2.57744,
 };
@@ -97,14 +101,26 @@ export function createKeyboardScene(skills: readonly KeyboardSkill[], columns = 
   const keyboardCenterY = (KIT.keyY + KIT.keyTop) / 2;
   const layout = group("Keyboard layout", spinId, [0, -keyboardCenterY * fit, 0], [fit, fit, fit]);
   const caseMaterial = material("Case", { color: "#171819", roughness: 0.64 });
-  for (let z = 0; z < 3; z++) for (let x = 0; x < 3; x++) {
-    const sx = x === 1 ? innerX / KIT.cutX : 1;
-    const sz = z === 1 ? innerZ / KIT.cutZ : 1;
-    model(`Case ${x}:${z}`, String(1 + z * 3 + x), caseMaterial, layout,
-      [(x - 1) * (innerX - KIT.cutX), 0, (z - 1) * (innerZ - KIT.cutZ)], [sx, 1, sz]);
-  }
+  const counterId = group("Left side counter", layout);
+  doc.nodes[counterId].visible = false;
   const outerX = innerX + KIT.halfW - KIT.cutX;
   const outerZ = innerZ + KIT.halfD - KIT.cutZ;
+  const counter = addCounterModel(doc, counterId, [-outerX - 0.003, 0.36, -0.3]);
+  const well = createKeyWell(outerX, outerZ, (cols - 1) * KIT.pitch + 1, (rows - 1) * KIT.pitch + 1);
+  const plateMaterial = material("Recessed switch plate", { color: "#101213", roughness: 0.82 });
+  for (const [name, geometry, materialId, x] of [
+    ["Case left edge", well.edge, caseMaterial, 0],
+    ["Case top rim", well.shelf, caseMaterial, well.shelfCenter],
+    ["Case body", well.body, caseMaterial, 0],
+    ["Recessed switch plate", well.plate, plateMaterial, 0],
+  ] as const) {
+    const position: Vec3 = [x, 0, 0];
+    const scale: Vec3 = [1, 1, 1];
+    add({
+      id: newId("nd"), name, type: "mesh", geometry, materialId,
+      visible: true, castShadow: true, receiveShadow: true, children: [], transform: transform(position, scale),
+    }, layout);
+  }
   const labelsId = group("Skill labels", layout, [-outerX + KIT.pitch / 2, 1.15, -outerZ - 0.7]);
   doc.nodes[labelsId].visible = false;
   const textMaterial = material("Skill text", { color: "#ffffff", roughness: 0.8 });
@@ -174,7 +190,7 @@ export function createKeyboardScene(skills: readonly KeyboardSkill[], columns = 
     transform: transform([0, -5.336 * 289 / 457 / 2, 0], [5.336, 5.336 * 289 / 457, 1]),
     visible: frame === 0, castShadow: false, receiveShadow: false, children: [],
   }, catId)) as [string, string];
-  return { document: doc, keys, boardId, spinId, revealId, catId, frameIds, labelsId, defaultLabelId,
+  return { document: doc, keys, boardId, spinId, revealId, catId, frameIds, labelsId, defaultLabelId, counter, counterId,
     pointerTargets: keys.map((k) => k.nodeId) };
 }
 
