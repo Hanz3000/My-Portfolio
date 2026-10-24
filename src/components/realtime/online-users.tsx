@@ -12,7 +12,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { motion } from "motion/react";
 
 import { SocketContext, Message, ChatItem } from "@/contexts/socketio";
 import { GameContext } from "@/contexts/game-context";
@@ -199,34 +198,14 @@ const OnlineUsers = () => {
                     variant="ghost"
                     className={cn(
                       "mr-4 h-11 w-12 shadow-lg transition-all duration-300 z-50 p-0",
-                      "bg-background/20 hover:bg-background/80 backdrop-blur-sm border-2 border-white/30 rounded-lg",
-                      !isOpen && unreads > 0 && "animate-pulse border-green-500/50"
+                      "bg-background/20 hover:bg-background/80 backdrop-blur-sm border-2 border-white/30 rounded-lg"
                     )}
                     aria-label={unreads > 0 ? `Open chat, ${unreads} unread` : `Open chat, ${users.length} online`}
                   >
                     <div className="relative flex items-center justify-center w-full h-full">
-                      <div className="relative">
-                        {unreads > 0 && (
-                          <motion.div
-                            initial={{ scale: 0.5, opacity: 1 }}
-                            animate={{ scale: [0.1, 2], opacity: [1, 0] }}
-                            transition={{
-                              duration: .4,
-                              delay: 0,
-                              ease: "easeOut",
-                              repeat: Infinity,
-                              repeatDelay: 2,
-                            }}
-                            className="absolute -inset-1 rounded-full bg-green-500/40"
-                          />
-                        )}
-                        <Users2 className="w-6 h-6" />
-                      </div>
+                      <Users2 className="w-6 h-6" />
 
-                      <span className={cn(
-                        "absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold transition-colors",
-                        unreads > 0 ? "bg-green-500 text-white" : "bg-red-500 text-white"
-                      )}>
+                      <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                         {unreads > 0 ? unreads : users.length}
                       </span>
                     </div>
