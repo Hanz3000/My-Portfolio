@@ -11,12 +11,10 @@ import {
 } from "react";
 import type { Socket } from "socket.io-client";
 import * as Dialog from "@radix-ui/react-dialog";
-import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { Loader2, Skull, Volume2, VolumeX, Trophy, X, Zap } from "lucide-react";
 import { SocketContext } from "@/contexts/socketio";
 import { usePerfProfile } from "@/hooks/use-perf-profile";
-import { getAvatarUrl } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 import { gameTheme } from "./game-theme";
 import { Game, HudStore, type Hud, type HudPlayer } from "./engine/game";
@@ -28,6 +26,7 @@ import { collectPlayerProfiles } from "./player-profile";
 import { MAX_PLAYERS, PLAYER_HP, ROOM_RE, WEAPONS, type GameJoinRequest } from "./protocol";
 import { roomUrl } from "./room-url";
 import { MatchNavigationGuard } from "./navigation-guard";
+import { PlayerAvatar } from "./player-avatar";
 
 const iconButtonClass =
   "grid size-[44px] place-items-center rounded text-[color:var(--game-muted)] transition-colors hover:bg-white/10 hover:text-[color:var(--game-text)]";
@@ -466,30 +465,14 @@ function PlayerIdentity({
   player: HudPlayer;
   compact?: boolean;
 }) {
-  const [failedAvatar, setFailedAvatar] = useState<string | null>(null);
   return (
     <div className="flex min-w-0 items-center gap-[8px]">
-      <span
-        className={cn(
-          "grid shrink-0 place-items-center overflow-hidden rounded-full border-2 font-bold text-[color:var(--game-avatar-ink)] [&_img]:block [&_img]:size-full [&_img]:object-cover",
-          compact ? "size-[24px] basis-[24px]" : "size-8 basis-8",
-        )}
-        style={{ backgroundColor: player.color, borderColor: player.color }}
-      >
-        {player.avatar && failedAvatar !== player.avatar ? (
-          <Image
-            src={getAvatarUrl(encodeURIComponent(player.avatar))}
-            alt=""
-            width={36}
-            height={36}
-            unoptimized
-            draggable={false}
-            onError={() => setFailedAvatar(player.avatar ?? null)}
-          />
-        ) : (
-          <span>{player.name.slice(0, 1).toUpperCase()}</span>
-        )}
-      </span>
+      <PlayerAvatar
+        name={player.name}
+        color={player.color}
+        avatar={player.avatar}
+        className={compact ? "size-[24px] basis-[24px]" : "size-8 basis-8"}
+      />
       <span
         className={cn(
           "min-w-0 leading-normal",

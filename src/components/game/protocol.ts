@@ -188,7 +188,7 @@ export function castRay<T extends Circle>(
 }
 
 export type LeaderboardPeriod = "all" | "week";
-export type LeaderboardPlayer = { name: string; color: string; kills: number; me: boolean };
+export type LeaderboardPlayer = { name: string; color: string; kills: number; avatar?: string; me: boolean };
 export type LeaderboardEntry = {
   id: string;
   wave: number;

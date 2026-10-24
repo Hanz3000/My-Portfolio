@@ -6,6 +6,8 @@ import { RefreshCw, X } from "lucide-react";
 import type { Socket } from "socket.io-client";
 import { cn } from "@/lib/utils";
 import { gameTheme } from "./game-theme";
+import { formatDuration, formatPlayed } from "./leaderboard-format";
+import { PlayerAvatar } from "./player-avatar";
 import type {
   Leaderboard,
   LeaderboardEntry,
@@ -106,7 +108,7 @@ export function LeaderboardDialog({
         <Dialog.Content
           className={cn(
             gameTheme,
-            "fixed left-1/2 top-1/2 z-[10001] flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-md bg-[color:var(--game-surface)] font-sans text-[color:var(--game-text)] focus:outline-none",
+            "fixed left-1/2 top-1/2 z-[10001] flex max-h-[min(calc(100dvh-2rem),720px)] w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-md bg-[color:var(--game-surface)] font-sans text-[color:var(--game-text)] focus:outline-none",
           )}
           data-lenis-prevent
           data-no-custom-cursor="true"
@@ -169,7 +171,7 @@ export function LeaderboardDialog({
           </div>
 
           <div
-            className="min-h-0 overflow-y-auto px-4 pb-4"
+            className="min-h-0 overflow-y-auto overscroll-contain px-4 pb-4"
             aria-busy={loading}
           >
             {error ? (
@@ -206,26 +208,26 @@ export function LeaderboardDialog({
                         Top 20 runs{" "}
                         {period === "week" ? "this week" : "of all time"}
                       </caption>
-                      <thead className="text-left text-xs text-zinc-400">
-                        <tr>
-                          <th scope="col" className="w-8 py-3 font-normal">
+                      <thead className="sticky top-0 z-10 bg-[color:var(--game-surface)] text-left text-xs text-zinc-400">
+                        <tr className="border-b border-white/10">
+                          <th scope="col" className="w-7 py-2 font-normal">
                             <span aria-hidden="true">#</span>
                             <span className="sr-only">Rank</span>
                           </th>
-                          <th scope="col" className="py-3 pr-2 font-normal">
+                          <th scope="col" className="py-2 pr-2 font-normal">
                             Players
                           </th>
-                          <th
-                            scope="col"
-                            className="w-14 py-3 text-right font-normal"
-                          >
+                          <th scope="col" className="w-12 py-2 text-right font-normal">
                             Wave
                           </th>
-                          <th
-                            scope="col"
-                            className="w-20 py-3 text-right font-normal"
-                          >
+                          <th scope="col" className="w-16 py-2 text-right font-normal sm:w-20">
                             Score
+                          </th>
+                          <th scope="col" className="hidden w-20 py-2 text-right font-normal sm:table-cell">
+                            Time
+                          </th>
+                          <th scope="col" className="hidden w-24 py-2 text-right font-normal sm:table-cell">
+                            Played
                           </th>
                         </tr>
                       </thead>
@@ -245,6 +247,10 @@ export function LeaderboardDialog({
                         <span className="tabular-nums text-zinc-100">
                           Wave {data.personalBest.wave} ·{" "}
                           {data.personalBest.score.toLocaleString()} pts
+                        </span>{" "}
+                        <span className="tabular-nums">
+                          · {formatDuration(data.personalBest.duration)} ·{" "}
+                          {formatPlayed(data.personalBest.endedAt)}
                         </span>
                       </p>
                     )}
@@ -259,21 +265,57 @@ export function LeaderboardDialog({
 }
 
 function RunRow({ entry, rank }: { entry: LeaderboardEntry; rank: number }) {
+  const mine = entry.players.some((p) => p.me);
+  const names = entry.players.map((p) => p.name).join(", ");
+  const played = new Date(entry.endedAt).toLocaleString();
+  const duration = formatDuration(entry.duration);
+  const ago = formatPlayed(entry.endedAt);
   return (
-    <tr className="border-b border-white/10 last:border-0">
-      <td className="py-3 align-top tabular-nums text-zinc-400">{rank}</td>
-      <td className="py-3 pr-2 align-top [overflow-wrap:anywhere]">
-        {entry.players.map((p, i) => (
-          <span key={i}>
-            {i > 0 && ", "}
-            {p.name}
-            {p.me && <span className="text-zinc-400"> (you)</span>}
-          </span>
-        ))}
+    <tr
+      className={cn(
+        "border-b border-white/10 last:border-0",
+        mine && "bg-white/[0.04]",
+      )}
+    >
+      <td className="py-2 tabular-nums text-zinc-400">{rank}</td>
+      <td className="py-2 pr-2">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex shrink-0 -space-x-2">
+            {entry.players.map((p, i) => (
+              <PlayerAvatar
+                key={i}
+                name={p.name}
+                color={p.color}
+                avatar={p.avatar}
+                className="size-7 text-xs ring-2 ring-[color:var(--game-surface)]"
+              />
+            ))}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate" title={names}>
+              {entry.players.map((p, i) => (
+                <span key={i}>
+                  {i > 0 && ", "}
+                  {p.name}
+                  {p.me && <span className="text-zinc-400"> (you)</span>}
+                </span>
+              ))}
+            </p>
+            <p className="truncate text-xs tabular-nums text-zinc-400 sm:hidden">
+              {duration} · <time dateTime={entry.endedAt} title={played}>{ago}</time>
+            </p>
+          </div>
+        </div>
       </td>
-      <td className="py-3 text-right align-top tabular-nums">{entry.wave}</td>
-      <td className="py-3 text-right align-top tabular-nums">
+      <td className="py-2 text-right tabular-nums">{entry.wave}</td>
+      <td className="py-2 text-right tabular-nums">
         {entry.score.toLocaleString()}
+      </td>
+      <td className="hidden py-2 text-right tabular-nums text-zinc-400 sm:table-cell">
+        {duration}
+      </td>
+      <td className="hidden py-2 text-right text-zinc-400 sm:table-cell">
+        <time dateTime={entry.endedAt} title={played}>{ago}</time>
       </td>
     </tr>
   );
