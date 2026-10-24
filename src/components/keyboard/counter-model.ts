@@ -76,7 +76,5 @@ export function addCounterModel(doc: ChibiDocument, parent: string, position: Ve
     box("Drum seam", id, inset, [0, 0, 0.05], [0.94, 0.009, 0.005]);
     return { id, drumId, symbols };
   });
-  const label = artwork("Counter engraving", '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="128"><text x="256" y="90" text-anchor="middle" fill="#b6b5ad" font-family="sans-serif" font-size="78" letter-spacing="6">PRESSES</text></svg>');
-  plane("PRESSES engraving", root, label, 0.7, 0.175, [1.88, 0, 0.012]);
   return { slots };
 }
