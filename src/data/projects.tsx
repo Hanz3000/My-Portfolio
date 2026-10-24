@@ -156,6 +156,12 @@ const PROJECT_SKILLS = {
   aiSDK: brand("Vercel AI SDK", "vercel-mono.svg"),
   anthropic: brand("Anthropic Claude", "anthropic-mono.svg"),
   mistral: brand("Mistral AI", "mistral-ai-mono.svg"),
+  electron: brand("Electron", "electron-mono.svg"),
+  vite: brand("Vite", "vite-mono.svg"),
+  astro: brand("Astro", "astro-mono.svg"),
+  sqlite: brand("SQLite", "sqlite-mono.svg"),
+  ffmpeg: brand("FFmpeg", "ffmpeg-mono.svg"),
+  ollama: brand("Ollama", "ollama-mono.svg"),
   // Not in the thesvg registry — keep the text mark.
   nextIntl: {
     title: "next-intl",
@@ -277,6 +283,109 @@ const projects: Project[] = [
             images={[
               `${BASE_PATH}/storekit/storefront.png`,
               `${BASE_PATH}/storekit/themes.png`,
+            ]}
+          />
+        </div>
+      );
+    },
+  },
+  {
+    id: "unottr",
+    category: "Local-first desktop app",
+    title: "unottr",
+    src: "/assets/projects-screenshots/unottr/landing.webp",
+    screenshots: ["landing.webp"],
+    skills: {
+      frontend: [
+        PROJECT_SKILLS.ts,
+        PROJECT_SKILLS.react,
+        PROJECT_SKILLS.electron,
+        PROJECT_SKILLS.vite,
+        PROJECT_SKILLS.tailwind,
+        PROJECT_SKILLS.astro,
+      ],
+      backend: [
+        PROJECT_SKILLS.node,
+        PROJECT_SKILLS.sqlite,
+        PROJECT_SKILLS.drizzle,
+        PROJECT_SKILLS.ffmpeg,
+        PROJECT_SKILLS.aiSDK,
+        PROJECT_SKILLS.ollama,
+        PROJECT_SKILLS.cloudflare,
+      ],
+    },
+    live: "https://unottr.pages.dev",
+    github: "https://github.com/Naresh-Khatri/unottr",
+    get content() {
+      return (
+        <div>
+          <TypographyP className="font-mono text-2xl text-center">
+            Private meeting memory — &quot;your meetings stay yours.&quot;
+          </TypographyP>
+          <TypographyP className="font-mono ">
+            A desktop app that watches a folder for meeting recordings and turns
+            them into searchable, speaker-labelled transcripts with the video
+            playing beside them. No account, no sign-in, no background upload:
+            transcription, speaker separation and search all run on your own
+            machine. Built with Electron, React 19 and TypeScript, it ships
+            natively for Linux x64 and Apple Silicon and sells as a one-time
+            $79 license instead of a subscription.
+          </TypographyP>
+          <ProjectsLinks live={this.live} repo={this.github} />
+
+          <TypographyH3 className="my-4 mt-8">
+            Drop a file, get a transcript
+          </TypographyH3>
+          <p className="font-mono mb-2">
+            Any new file in a watched folder is probed, transcribed and diarized
+            on its own, with no import step or start button. Every pipeline stage
+            (discover → probe → extract → detect speech → transcribe → diarize →
+            merge → index) is a persisted queue state, so a crash resumes at a
+            stage boundary instead of starting over. Whisper runs on Vulkan or
+            Metal in ~30s VAD-aligned chunks, each written to SQLite as it lands,
+            inside a forked utility process, so a native crash kills one job and
+            not the app. Speaker identification uses Sortformer on a Vulkan GPU
+            (a five-minute sample in under 6 seconds) with sherpa-onnx as the CPU
+            fallback, and named speakers are recognised in later meetings by
+            voiceprint.
+          </p>
+          <SlideShow
+            images={[
+              `${BASE_PATH}/unottr/transcript.png`,
+              `${BASE_PATH}/unottr/library.png`,
+            ]}
+          />
+
+          <TypographyH3 className="my-4 mt-8">
+            Search every word, land on the exact second
+          </TypographyH3>
+          <p className="font-mono mb-2">
+            Full-text search (SQLite FTS5) across every transcript, summary and
+            note opens the recording at the matching timestamp. A command palette,
+            a player with speaker bands on the scrub bar and frame previews on
+            hover, and reversible glossary rules for names and acronyms all make
+            the library quicker to work with. Transcripts export as
+            TXT/JSON/SRT/VTT and mirror to Markdown notes.
+          </p>
+
+          <TypographyH3 className="my-4 mt-8">
+            Optional AI with citations that cannot lie
+          </TypographyH3>
+          <p className="font-mono mb-2">
+            Nothing touches a model until you ask. Overviews and Ask threads run
+            on a connection you choose: Ollama or LM Studio on the same machine,
+            your own OpenAI/Anthropic/Mistral key, or an installed Claude Code,
+            Codex or Antigravity CLI sandboxed in a temp directory. The model only
+            sees segment IDs, which resolve to timestamps in one place, and any
+            citation that doesn&apos;t resolve is dropped, so it can never invent
+            a confident link into the wrong minute. Before the first send, a
+            consent panel shows the exact payload; audio, video and frames never
+            leave the device.
+          </p>
+          <SlideShow
+            images={[
+              `${BASE_PATH}/unottr/overview.png`,
+              `${BASE_PATH}/unottr/ai-connection.png`,
             ]}
           />
         </div>
@@ -465,89 +574,6 @@ const projects: Project[] = [
             images={[
               `${BASE_PATH}/gumbalup/editor.png`,
               `${BASE_PATH}/gumbalup/library.png`,
-            ]}
-          />
-        </div>
-      );
-    },
-  },
-  {
-    id: "waku",
-    category: "Image rendering platform",
-    title: "Waku",
-    src: "/assets/projects-screenshots/waku/landing.png",
-    screenshots: ["landing.png"],
-    skills: {
-      frontend: [
-        PROJECT_SKILLS.ts,
-        PROJECT_SKILLS.next,
-        PROJECT_SKILLS.react,
-        PROJECT_SKILLS.tailwind,
-      ],
-      backend: [
-        PROJECT_SKILLS.trpc,
-        PROJECT_SKILLS.drizzle,
-        PROJECT_SKILLS.postgres,
-        PROJECT_SKILLS.satori,
-        PROJECT_SKILLS.betterAuth,
-        PROJECT_SKILLS.cloudflare,
-        PROJECT_SKILLS.turborepo,
-        PROJECT_SKILLS.docker,
-      ],
-    },
-    live: "https://waku.nareshkhatri.dev",
-    github: "https://github.com/Naresh-Khatri/waku",
-    get content() {
-      return (
-        <div>
-          <TypographyP className="font-mono text-2xl text-center">
-            An on-demand dynamic image-generation service — &quot;design once,
-            ship a typed URL endpoint.&quot;
-          </TypographyP>
-          <TypographyP className="font-mono ">
-            Design a template once in a Canva-like editor, then get a typed URL
-            that renders images with live, dynamic data on demand (currently
-            focused on OG images). Built as a 7-package Turborepo monorepo
-            (Next.js 15 / React 19 / TypeScript) — a visual editor, an edge render
-            service, a 3-stage rendering engine, typed SDKs, and shared DB/font
-            packages. 25K+ LOC, MIT-licensed and self-hostable via
-            docker-compose.
-          </TypographyP>
-          <ProjectsLinks live={this.live} repo={this.github} />
-
-          <TypographyH3 className="my-4 mt-8">
-            Deterministic render pipeline &amp; URL contract
-          </TypographyH3>
-          <p className="font-mono mb-2">
-            A deterministic pipeline (TemplateDocument → Satori → Resvg → sharp)
-            compiles a flat node IR to SVG and rasterizes to PNG/WebP/JPEG with
-            HTTP Accept-based format negotiation, dynamic font subsetting from a
-            CDN (25 families, Latin unicode-range parsing), and retina-aware
-            transcoding — served behind an immutable Cache-Control: max-age=1y URL
-            contract. Query params are sorted before encoding so any input order
-            maps to one cache key; versioned URLs are immutable while published
-            URLs 302-redirect to a numbered version, so edits never break
-            previously-shared links.
-          </p>
-          <SlideShow images={[`${BASE_PATH}/waku/preview.png`]} />
-
-          <TypographyH3 className="my-4 mt-8">
-            Canva-like editor &amp; AI template generation
-          </TypographyH3>
-          <p className="font-mono mb-2">
-            A visual editor built from scratch (no Figma/tldraw/Fabric) on raw
-            pointer events + a Zustand store: edge/center snap guides,
-            scroll-anchored + pinch zoom (5%–800%), a 100-entry coalesced
-            undo/redo stack, and a parameter-binding system that turns any field
-            into a typed URL param. An AI agent generates full templates from a
-            prompt, validated against a Zod document schema. The public image
-            proxy is also SSRF-hardened (private-IP/CIDR blocking, redirect
-            re-validation, streaming size caps, and per-user/IP rate limiting).
-          </p>
-          <SlideShow
-            images={[
-              `${BASE_PATH}/waku/editor.png`,
-              `${BASE_PATH}/waku/ai.png`,
             ]}
           />
         </div>
