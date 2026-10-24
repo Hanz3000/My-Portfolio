@@ -18,6 +18,7 @@ import { usePerfProfile } from "@/hooks/use-perf-profile";
 import { cn } from "@/lib/utils";
 import { gameTheme } from "./game-theme";
 import { Game, HudStore, type Hud, type HudPlayer } from "./engine/game";
+import { ArenaBackdrop } from "./engine/backdrop";
 import { LeaderboardDialog } from "./leaderboard";
 import { PingIndicator } from "./ping-indicator";
 import { monitorGamePing } from "./engine/ping";
@@ -156,6 +157,7 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
         className="block h-full w-full cursor-crosshair touch-none outline-none"
         aria-label="Survival arena. Move with WASD or arrow keys, aim and fire with the mouse, and press Space to dash."
       />
+      {!request && <Backdrop {...renderProfile} />}
       {hud.hurt > 0 && (
         <motion.div
           key={hud.hurt}
@@ -455,6 +457,38 @@ export default function GameOverlay({ socket, room, onRoomJoined, onClose }: Pro
         </Dialog.Portal>
       </Dialog.Root>
     </div>
+  );
+}
+
+function Backdrop({ maxDpr, shadows }: { maxDpr: number; shadows: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const reducedMotion = useReducedMotion();
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    const backdrop = new ArenaBackdrop(canvasRef.current, {
+      maxDpr,
+      shadows,
+      still: !!reducedMotion,
+      onReady: () => setReady(true),
+    });
+    return () => backdrop.dispose();
+  }, [maxDpr, shadows, reducedMotion]);
+  return (
+    <>
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-0 block size-full transition-opacity duration-700",
+          ready ? "opacity-100" : "opacity-0",
+        )}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(7,8,13,0.8)_100%)]"
+      />
+    </>
   );
 }
 
