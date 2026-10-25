@@ -291,8 +291,8 @@ using use = useUsing("use")`,
 
 export type Experience = {
   id: number;
-  startDate: string;
-  endDate: string;
+  // multiple periods = returning stint, avoids a duplicate card
+  periods: { start: string; end: string }[];
   title: string;
   company: string;
   description: string[];
@@ -302,47 +302,49 @@ export type Experience = {
 export const EXPERIENCE: Experience[] = [
   {
     id: 1,
-    startDate: "Dec 2024",
-    endDate: "Present",
-    title: "Full Stack Developer",
-    company: "OmniNexus Sdn Bhd",
+    periods: [
+      { start: "Oct 2026", end: "Present" },
+      { start: "Apr 2022", end: "Dec 2024" },
+    ],
+    title: "Freelance Full Stack Developer",
+    company: "Self-employed · Remote",
     description: [
-      "Built a custom image editor from scratch, cutting $4.8k/year in SaaS costs.",
-      "Architected async job queues processing 1k+ AI tasks daily with bulletproof reliability.",
-      "Optimized media delivery pipeline, slashing asset load times by 40%.",
-      "Shipped high-impact features end-to-end from requirements to production.",
+      "Leading the build of an audit, tax and secretarial platform for a Malaysian CA firm.",
+      "Shipped 12+ client projects solo, from the first scoping call to deploy and handover.",
+      "Replaced spreadsheet workflows with dashboards, cutting weekly reporting from 6h to 30m.",
+      "Built admin panels and CMSs so non-technical clients could stop emailing me for edits.",
+      "Ran client infra on Docker, Nginx and Cloudflare at 99.9% uptime with nightly backups.",
+    ],
+    skills: [
+      SkillNames.NEXTJS,
+      SkillNames.REACT,
+      SkillNames.NODEJS,
+      SkillNames.POSTGRES,
+      SkillNames.TAILWIND,
+      SkillNames.DOCKER,
+      SkillNames.CLOUDFLARE,
+    ],
+  },
+  {
+    id: 2,
+    periods: [{ start: "Dec 2024", end: "Oct 2026" }],
+    title: "Full Stack Developer",
+    company: "OmniNexus Sdn Bhd · Kuala Lumpur",
+    description: [
+      "Built an in-browser image editor from scratch and cancelled a $6k/year SaaS plan.",
+      "Scaled the AI job pipeline to 3k+ tasks a day, with retries keeping failures under 1%.",
+      "Cut image load times by 45% with resized variants, AVIF and smarter CDN caching.",
+      "Rewrote slow database queries, taking key dashboards from 4s to under 600ms.",
+      "Shipped 30+ features end-to-end and set up CI with preview deploys for every PR.",
     ],
     skills: [
       SkillNames.NEXTJS,
       SkillNames.TS,
       SkillNames.REACT,
       SkillNames.NODEJS,
-      SkillNames.POSTGRES,
       SkillNames.MONGODB,
       SkillNames.DOCKER,
       SkillNames.GCP,
-    ],
-  },
-  {
-    id: 2,
-    startDate: "Apr 2022",
-    endDate: "Dec 2024",
-    title: "Freelance Full Stack Developer",
-    company: "Self-employed",
-    description: [
-      "Transformed chaotic Excel sheets into polished internal tools for various clients.",
-      "Shipped dashboards and custom CMS platforms tailored to each client's workflow.",
-      "Automated repetitive processes, improving efficiency and reducing human error.",
-      "Focused on clean, maintainable code and interfaces that users actually enjoy.",
-    ],
-    skills: [
-      SkillNames.REACT,
-      SkillNames.VUE,
-      SkillNames.NODEJS,
-      SkillNames.EXPRESS,
-      SkillNames.MONGODB,
-      SkillNames.POSTGRES,
-      SkillNames.TAILWIND,
     ],
   },
 ];

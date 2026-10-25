@@ -54,7 +54,7 @@ const ExperienceCard = ({
     >
       <Card
         className={cn(
-          "bg-card text-card-foreground border-border",
+          "group bg-card text-card-foreground border-border",
           "hover:border-primary/20 transition-colors duration-300",
           "shadow-sm hover:shadow-md"
         )}
@@ -69,9 +69,38 @@ const ExperienceCard = ({
                 {experience.company}
               </div>
             </div>
-            <Badge variant="secondary" className="w-fit font-mono text-xs font-normal">
-              {experience.startDate} - {experience.endDate}
-            </Badge>
+            <ol className="relative flex flex-col gap-2.5 md:items-end">
+              {experience.periods.length > 1 && (
+                <span className="absolute left-[3.5px] md:left-auto md:right-[3.5px] top-2 bottom-2 w-px bg-border" />
+              )}
+              {experience.periods.map((p, i) => {
+                const active = p.end === "Present";
+                return (
+                  <li
+                    key={i}
+                    className={cn(
+                      "relative flex items-center gap-2.5 md:flex-row-reverse font-mono text-xs",
+                      active ? "text-foreground" : "text-muted-foreground"
+                    )}
+                  >
+                    <span className="relative flex size-2 shrink-0">
+                      {active && (
+                        <span className="absolute inset-0 rounded-full bg-emerald-500/60 motion-safe:animate-ping" />
+                      )}
+                      <span
+                        className={cn(
+                          "relative size-2 rounded-full",
+                          active
+                            ? "bg-emerald-500"
+                            : "border border-muted-foreground/50 bg-card"
+                        )}
+                      />
+                    </span>
+                    {p.start} - {p.end}
+                  </li>
+                );
+              })}
+            </ol>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -88,12 +117,13 @@ const ExperienceCard = ({
                 <Badge
                   key={skillName}
                   variant="outline"
-                  className="gap-2 text-xs font-normal bg-secondary/30 hover:bg-secondary/50 transition-colors border-transparent"
+                  className="gap-1.5 text-xs font-normal text-muted-foreground bg-secondary/30 border-transparent"
                 >
+                  {/* mono until card hover -> less noise across 10+ logos */}
                   <img
                     src={skill.icon}
-                    alt={skill.label}
-                    className="w-3.5 h-3.5 object-contain opacity-80"
+                    alt=""
+                    className="w-3.5 h-3.5 object-contain grayscale opacity-60 transition duration-300 group-hover:grayscale-0 group-hover:opacity-100"
                   />
                   {skill.label}
                 </Badge>
