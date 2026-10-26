@@ -17,6 +17,8 @@ import { usePerfProfile } from "@/hooks/use-perf-profile";
 // Space (px) to keep clear at the right edge so a clamped cursor's pointer
 // glyph and avatar pill (which extend right of x) stay on-screen.
 const CURSOR_EDGE_RESERVE = 56;
+// rough max expanded pill width (avatar + location + truncated msg); past this -> grow leftward
+const PILL_EXPANDED_WIDTH = 240;
 
 const RemoteCursors = () => {
   const { socket, users: _users, followingId, setFollowingId } = useContext(SocketContext);
@@ -134,6 +136,7 @@ const RemoteCursors = () => {
                 socketId={user.socketId}
                 avatar={user.avatar}
                 headerText={`${user.location} ${user.flag}`}
+                flip={viewport.w > 0 && x + 16 + PILL_EXPANDED_WIDTH > viewport.w}
                 isFocused={followingId === user.socketId}
               />
             );
@@ -190,6 +193,7 @@ const Cursor = ({
   socketId,
   avatar,
   isFocused = false,
+  flip = false,
 }: {
   x: number;
   y: number;
@@ -198,6 +202,7 @@ const Cursor = ({
   socketId: string;
   avatar: string;
   isFocused?: boolean;
+  flip?: boolean;
 }) => {
   const [showText, setShowText] = useState(false);
   const [msgText, setMsgText] = useState("");
@@ -294,8 +299,9 @@ const Cursor = ({
       />
 
       {/* Avatar pill that expands to show text */}
+      {/* flipped: avatar stays put (right edge at x+56), text grows leftward */}
       <motion.div
-        className="absolute top-4 left-4 flex items-center rounded-full border-2 shadow-lg overflow-hidden"
+        className={`absolute top-4 flex items-center rounded-full border-2 shadow-lg overflow-hidden ${flip ? "-right-8 flex-row-reverse" : "left-4"}`}
         style={{
           borderColor: color,
           backgroundColor: color + '60',
@@ -324,7 +330,7 @@ const Cursor = ({
               animate={{ opacity: 1, width: 'auto' }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: reducedMotion ? 0 : 0.3, ease: 'easeOut' }}
-              className="flex flex-col justify-center pl-2 pr-3 py-1 whitespace-nowrap"
+              className={`flex flex-col justify-center py-1 whitespace-nowrap ${flip ? "pl-3 pr-2 items-end" : "pl-2 pr-3"}`}
             >
               <div className="text-xs font-medium text-white">{headerText}</div>
               {msgText && (
