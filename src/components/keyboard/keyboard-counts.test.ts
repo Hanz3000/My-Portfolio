@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { test } from "node:test";
-import { createKeyInput } from "./input";
+import { createKeyInput, defaultShortcut } from "./input";
 import type { KeyboardKey } from "./scene";
 import { keyWear, mergeKeyboardCounts } from "./wear";
 
@@ -14,7 +14,7 @@ test("stale snapshots and out-of-order broadcasts cannot reduce lifetime totals"
 });
 
 test("a click on an already hovered key counts once and releases independently", () => {
-  const input = createKeyInput([{ nodeId: "react", skill: { shortcut: "KeyR" } } as KeyboardKey]);
+  const input = createKeyInput([{ nodeId: "react", skill: { shortcut: "KeyR" } } as KeyboardKey], 6);
   const transitions: boolean[] = [];
   input.subscribe((_key, pressed) => transitions.push(pressed));
   assert.equal(input.press("hover", "react"), true);
@@ -39,7 +39,7 @@ test("wear remains bounded and grows independently with each key's lifetime coun
 });
 
 test("hover, touch and keyboard count only new visual presses", () => {
-  const input = createKeyInput(["react", "js"].map(nodeId => ({ nodeId, skill: {} }) as KeyboardKey));
+  const input = createKeyInput(["react", "js"].map(nodeId => ({ nodeId, skill: {} }) as KeyboardKey), 6);
   const presses: string[] = [];
   input.subscribe((key, pressed) => { if (pressed) presses.push(key.nodeId); });
   input.press("hover", "react");
@@ -56,4 +56,16 @@ test("hover, touch and keyboard count only new visual presses", () => {
   input.press("key:KeyR", "react");
   input.press("key:KeyR", "react");
   assert.deepEqual(presses, ["react", "react", "js", "js", "react"]);
+});
+
+test("default shortcuts follow physical keyboard rows, bottom-aligned", () => {
+  const codes = (total: number) => Array.from({ length: total }, (_, i) => defaultShortcut(i, 6, total));
+  assert.deepEqual(codes(24), [
+    "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6",
+    "KeyQ", "KeyW", "KeyE", "KeyR", "KeyT", "KeyY",
+    "KeyA", "KeyS", "KeyD", "KeyF", "KeyG", "KeyH",
+    "KeyZ", "KeyX", "KeyC", "KeyV", "KeyB", "KeyN",
+  ]);
+  assert.deepEqual(codes(8), ["KeyA", "KeyS", "KeyD", "KeyF", "KeyG", "KeyH", "KeyZ", "KeyX"]);
+  assert.equal(codes(30)[0], undefined);
 });

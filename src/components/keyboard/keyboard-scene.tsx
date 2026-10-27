@@ -48,7 +48,7 @@ export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
   const dpr = useMemo<[number, number]>(() =>
     [0.5, Math.min(graphics.dpr, maxDpr)], [maxDpr, graphics.dpr]);
   const visibleLabel = useRef<string | null>(null);
-  const input = useMemo(() => createKeyInput(scene.keys), [scene]);
+  const input = useMemo(() => createKeyInput(scene.keys, scene.columns), [scene]);
   const { counts, total, available, recordPress } = useKeyboardCounts();
   useEffect(() => {
     if (!ready || !api.current) return;
@@ -185,7 +185,7 @@ export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
           <div aria-live="polite" className="sr-only">
             <p className="text-xl font-semibold">{selected?.label ?? "Explore my skills"}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {selected?.shortDescription ?? "Hover, tap, or press a letter key"}
+              {selected?.shortDescription ?? "Hover, tap, or press a key"}
             </p>
           </div>
           <a

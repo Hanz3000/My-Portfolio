@@ -38,6 +38,7 @@ export type KeyboardScene = {
   pointerTargets: string[];
   counter: CounterModel;
   counterId: string;
+  columns: number;
 };
 
 // Geometry contract of assets/keyboard/keycaps.glb, in key-width units.
@@ -144,7 +145,7 @@ export function createKeyboardScene(skills: readonly KeyboardSkill[], columns = 
       visible: true, castShadow: false, receiveShadow: false, children: [] }, id);
     return id;
   };
-  const defaultLabelId = label("Explore my skills", "Hover, tap, or press a letter key");
+  const defaultLabelId = label("Explore my skills", "Hover, tap, or press a key");
   doc.nodes[defaultLabelId].visible = true;
   const keys = skills.map((skill, index): KeyboardKey => {
     // separate groups let placement, motion, and presses compose
@@ -190,7 +191,7 @@ export function createKeyboardScene(skills: readonly KeyboardSkill[], columns = 
     transform: transform([0, -5.336 * 289 / 457 / 2, 0], [5.336, 5.336 * 289 / 457, 1]),
     visible: frame === 0, castShadow: false, receiveShadow: false, children: [],
   }, catId)) as [string, string];
-  return { document: doc, keys, boardId, spinId, revealId, catId, frameIds, labelsId, defaultLabelId, counter, counterId,
+  return { document: doc, keys, boardId, spinId, revealId, catId, frameIds, labelsId, defaultLabelId, counter, counterId, columns: cols,
     pointerTargets: keys.map((k) => k.nodeId) };
 }
 

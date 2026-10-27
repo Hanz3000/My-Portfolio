@@ -1,12 +1,21 @@
 import type { KeyboardKey } from "./scene";
 
-export const DEFAULT_SHORTCUTS = [
-  ..."QWERTYUIOP", ..."ASDFGHJKL", ..."ZXCVBNM",
-].map((key) => `Key${key}`);
+const PHYSICAL_ROWS = [
+  [..."1234567890"].map((key) => `Digit${key}`),
+  ...["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"].map((row) => [...row].map((key) => `Key${key}`)),
+];
+
+/** Rendered grid -> physical rows, bottom-aligned so the last rendered row is always Z-row. */
+export function defaultShortcut(index: number, columns: number, total: number): string | undefined {
+  const rows = Math.ceil(total / columns);
+  const row = PHYSICAL_ROWS.length - rows + Math.floor(index / columns);
+  return PHYSICAL_ROWS[row]?.[index % columns];
+}
 
 /** A key stays down until every input holding it has released. */
 export function createKeyInput(
   keys: readonly KeyboardKey[],
+  columns: number,
 ) {
   const listeners = new Set<(key: KeyboardKey, pressed: boolean) => void>();
   const onChange = (key: KeyboardKey, pressed: boolean) => listeners.forEach((listener) => listener(key, pressed));
@@ -15,7 +24,7 @@ export function createKeyInput(
   const held = new Map<string, Set<string>>();
   const shortcuts = new Map<string, KeyboardKey>();
   keys.forEach((key, index) => {
-    const code = key.skill.shortcut ?? DEFAULT_SHORTCUTS[index];
+    const code = key.skill.shortcut ?? defaultShortcut(index, columns, keys.length);
     if (!code) return;
     if (shortcuts.has(code)) throw new Error(`Duplicate keyboard shortcut: ${code}`);
     shortcuts.set(code, key);
