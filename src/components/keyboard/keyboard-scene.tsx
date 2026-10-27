@@ -5,7 +5,7 @@ import { ChibiScene, type ChibiSceneApi, type ScenePointerEvent, type RuntimeEve
 import { SKILLS } from "@/data/constants";
 import { setSceneStatus } from "@/lib/scene-health";
 import { usePreloader } from "../preloader";
-import { createKeyboardScene, resolveKeyboardAsset, type KeyboardSkill } from "./scene";
+import { createKeyboardScene, resolveKeyboardAsset, type KeyboardKey, type KeyboardSkill } from "./scene";
 import { createKeyInput, isTypingTarget } from "./input";
 import { createKeyboardMotion, type KeyboardSection } from "./motion";
 import { useKeyboardSounds } from "./use-keyboard-sounds";
@@ -48,6 +48,7 @@ export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
   const dpr = useMemo<[number, number]>(() =>
     [0.5, Math.min(graphics.dpr, maxDpr)], [maxDpr, graphics.dpr]);
   const visibleLabel = useRef<string | null>(null);
+  const heldKeys = useRef<KeyboardKey[]>([]);
   const input = useMemo(() => createKeyInput(scene.keys, scene.columns), [scene]);
   const { counts, total, available, recordPress } = useKeyboardCounts();
   useEffect(() => {
@@ -73,13 +74,20 @@ export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
       emissive: scene.document.materials[key.materialId].color,
       emissiveIntensity: pressed ? 0.7 : 0,
     });
+    heldKeys.current = heldKeys.current.filter((held) => held !== key);
     if (pressed) {
       if (ready && !isLoading && !document.hidden) recordPress(key.skill.name);
-      api.current?.setNodeVisible(visibleLabel.current ?? scene.defaultLabelId, false);
-      api.current?.setNodeVisible(key.labelId, true);
-      visibleLabel.current = key.labelId;
-      setSelected(key.skill);
+      heldKeys.current.push(key);
     }
+    // latest still-held key wins; none held -> back to default prompt
+    const shown = heldKeys.current.at(-1) ?? null;
+    const labelId = shown?.labelId ?? scene.defaultLabelId;
+    if (labelId !== (visibleLabel.current ?? scene.defaultLabelId)) {
+      api.current?.setNodeVisible(visibleLabel.current ?? scene.defaultLabelId, false);
+      api.current?.setNodeVisible(labelId, true);
+    }
+    visibleLabel.current = shown?.labelId ?? null;
+    setSelected(shown?.skill ?? null);
     playSound(pressed);
   }), [input, scene, playSound, markActive, ready, isLoading, recordPress]);
 
