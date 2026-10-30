@@ -10,23 +10,20 @@ import ProjectsSection from "@/components/sections/projects";
 import CertificatesSection from "@/components/sections/certificates";
 import ContactSection from "@/components/sections/contact";
 import HeroSection from "@/components/sections/hero";
-import { ProfileShowcaseProvider } from "@/contexts/profile-showcase";
 
 function MainPage() {
   return (
-    <ProfileShowcaseProvider>
-      <SmoothScroll>
-        <AnimatedBackground />
-        <main className={cn("bg-slate-100 dark:bg-transparent canvas-overlay-mode")}>
-          <HeroSection />
-          <SkillsSection />
-          <ExperienceSection />
-          <ProjectsSection />
-          <CertificatesSection />
-          <ContactSection />
-        </main>
-      </SmoothScroll>
-    </ProfileShowcaseProvider>
+    <SmoothScroll>
+      <AnimatedBackground />
+      <main className={cn("bg-slate-100 dark:bg-transparent canvas-overlay-mode")}>
+        <HeroSection />
+        <SkillsSection />
+        <ExperienceSection />
+        <ProjectsSection />
+        <CertificatesSection />
+        <ContactSection />
+      </main>
+    </SmoothScroll>
   );
 }
 

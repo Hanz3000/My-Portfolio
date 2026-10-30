@@ -9,7 +9,7 @@ const links: Link[] = [
   {
     title: 'About',
     href: '/#about',
-    thumbnail: '/assets/nav-link-previews/about.png'
+    thumbnail: '/assets/nav-link-previews/about1.png'
   },
   {
     title: 'Skills',
@@ -22,7 +22,7 @@ const links: Link[] = [
     thumbnail: '/assets/nav-link-previews/projects-farhan.png'
   },
   {
-    title: 'Sertifikat',
+    title: 'Certificates',
     href: '/#certificates',
     thumbnail: '/assets/certificates/Sertifikat Web Devoloper.jpg'
   },

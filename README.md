@@ -26,7 +26,7 @@ npm install
 npm run dev
 ```
 
-Then open <http://localhost:3000>.
+Then open <https://farhan-ramadhan.vercel.app/>.
 
 ## Credits
 

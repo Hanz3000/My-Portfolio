@@ -10,6 +10,7 @@ import FunnyThemeToggle from "@/components/theme/funny-theme-toggle";
 import { useLenis } from "@/lib/lenis";
 import { usePerfProfile } from "@/hooks/use-perf-profile";
 import { usePathname } from "next/navigation";
+import { useProfileShowcase } from "@/contexts/profile-showcase";
 
 interface SelectedLink {
   isActive: boolean;
@@ -33,6 +34,7 @@ export default function Body({
   const pathname = usePathname();
   const lenis = useLenis();
   const { reducedMotion } = usePerfProfile();
+  const { setProfileOpen } = useProfileShowcase();
   const [currentHref, setCurrentHref] = useState("/");
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -56,6 +58,31 @@ export default function Body({
     }
 
     const url = new URL(href, window.location.origin);
+    const opensAboutProfile = url.pathname === "/" && url.hash === "#about";
+    setProfileOpen(opensAboutProfile);
+
+    if (opensAboutProfile && url.pathname === pathname) {
+      event.preventDefault();
+      window.history.replaceState(window.history.state, "", url.hash);
+      setCurrentHref(`${url.pathname}${url.hash}`);
+
+      const heroSection = document.getElementById("hero");
+      if (heroSection) {
+        if (lenis) {
+          lenis.scrollTo(heroSection, {
+            duration: reducedMotion ? 0 : 2,
+            immediate: reducedMotion,
+          });
+        } else {
+          heroSection.scrollIntoView({
+            behavior: reducedMotion ? "instant" : "smooth",
+          });
+        }
+      }
+
+      return;
+    }
+
     if (url.pathname !== pathname || !url.hash) return;
 
     event.preventDefault();

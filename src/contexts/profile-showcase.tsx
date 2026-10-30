@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 type ProfileShowcaseContextValue = {
   isProfileOpen: boolean;
@@ -12,6 +12,22 @@ const ProfileShowcaseContext = createContext<ProfileShowcaseContextValue | null>
 
 export function ProfileShowcaseProvider({ children }: { children: ReactNode }) {
   const [isProfileOpen, setProfileOpen] = useState(false);
+
+  useEffect(() => {
+    const syncProfileWithLocation = () => {
+      setProfileOpen(
+        window.location.pathname === "/" && window.location.hash === "#about"
+      );
+    };
+
+    syncProfileWithLocation();
+    window.addEventListener("hashchange", syncProfileWithLocation);
+    window.addEventListener("popstate", syncProfileWithLocation);
+    return () => {
+      window.removeEventListener("hashchange", syncProfileWithLocation);
+      window.removeEventListener("popstate", syncProfileWithLocation);
+    };
+  }, []);
 
   return (
     <ProfileShowcaseContext.Provider value={{
