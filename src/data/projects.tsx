@@ -588,7 +588,7 @@ const projects: Project[] = [
     src: "/assets/projects-screenshots/portfolio/landing-20261030.png",
     screenshots: ["1.png"],
     live: "#",
-    github: "",
+    github: "https://github.com/Hanz3000/My-Portfolio.git",
     showSource: true,
     skills: {
       frontend: [
