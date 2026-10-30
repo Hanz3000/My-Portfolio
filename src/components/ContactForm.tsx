@@ -1,13 +1,12 @@
 "use client";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import React from "react";
 import { Label } from "./ui/label";
 import { Input } from "./ui/ace-input";
 import { Textarea } from "./ui/ace-textarea";
 import { cn } from "@/lib/utils";
-import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
-import { useRouter } from "next/navigation";
+import { config } from "@/data/config";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -22,13 +21,9 @@ const ContactForm = () => {
   const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [message, setMessage] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
   const [errors, setErrors] = React.useState<FieldErrors>({});
 
-  const { toast } = useToast();
-  const router = useRouter();
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrors({});
 
@@ -43,45 +38,22 @@ const ContactForm = () => {
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await fetch("/api/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, message }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || `Request failed (${res.status})`);
-      }
-      toast({
-        title: "Thank you!",
-        description: "I'll get back to you as soon as possible.",
-        variant: "default",
-        className: cn("top-0 mx-auto flex fixed md:top-4 md:right-4"),
-      });
-      setLoading(false);
-      setFullName("");
-      setEmail("");
-      setMessage("");
-      const timer = setTimeout(() => {
-        router.push("/");
-        clearTimeout(timer);
-      }, 1000);
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Something went wrong! Please try again.",
-        className: cn(
-          "top-0 w-full flex justify-center fixed md:max-w-7xl md:top-4 md:right-4"
-        ),
-        variant: "destructive",
-      });
-    }
-    setLoading(false);
+    const composeUrl = new URL("https://mail.google.com/mail/");
+    composeUrl.searchParams.set("view", "cm");
+    composeUrl.searchParams.set("fs", "1");
+    composeUrl.searchParams.set("to", config.email);
+    composeUrl.searchParams.set(
+      "su",
+      `Pesan dari website portofolio - ${result.data.fullName}`
+    );
+    composeUrl.searchParams.set(
+      "body",
+      `Halo Farhan,\n\n${result.data.message}\n\nSalam,\n${result.data.fullName}\nEmail untuk balasan: ${result.data.email}`
+    );
+    window.location.assign(composeUrl.toString());
   };
   return (
-    <form className="min-w-7xl mx-auto sm:mt-4" onSubmit={handleSubmit} aria-busy={loading}>
+    <form className="min-w-7xl mx-auto sm:mt-4" onSubmit={handleSubmit}>
       <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 mb-4">
         <LabelInputContainer>
           <Label htmlFor="fullname">Full name</Label>
@@ -120,22 +92,18 @@ const ContactForm = () => {
         </p>
       </div>
       <Button
-        disabled={loading}
         className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
         type="submit"
       >
-        {loading ? (
-          <div className="flex items-center justify-center">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            <p>Please wait</p>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center">
-            Send Message <ChevronRight className="w-4 h-4 ml-4" />
-          </div>
-        )}
+        <div className="flex items-center justify-center">
+          Send Message <ChevronRight className="w-4 h-4 ml-4" />
+        </div>
         <BottomGradient />
       </Button>
+      <p className="mt-3 text-sm text-muted-foreground">
+        Gmail akan terbuka dengan email yang sudah disiapkan. Periksa lalu tekan
+        Kirim di Gmail.
+      </p>
     </form>
   );
 };

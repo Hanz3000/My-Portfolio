@@ -22,7 +22,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface ResponsiveDialogProps {
   children: React.ReactNode;
@@ -87,8 +87,14 @@ function ResponsiveDialogContent({
   }
 
   return (
-    <DrawerContent className={className}>
-      <ScrollArea className="max-h-[85vh] px-4 pb-4 overflow-y-auto!" data-lenis-prevent>{children}</ScrollArea>
+    <DrawerContent
+      className={cn(
+        "mt-0 flex h-[92dvh] max-h-[92dvh] flex-col gap-0 overflow-hidden p-0",
+        className
+      )}
+      data-lenis-prevent
+    >
+      {children}
     </DrawerContent>
   );
 }

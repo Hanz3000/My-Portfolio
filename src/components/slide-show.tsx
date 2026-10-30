@@ -72,7 +72,13 @@ const Frame = ({
   </motion.button>
 );
 
-const SlideShow = ({ images }: { images: string[] }) => {
+const SlideShow = ({
+  images,
+  autoplay = true,
+}: {
+  images: string[];
+  autoplay?: boolean;
+}) => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const isOpen = selectedIndex !== null;
   const multiple = images.length > 1;
@@ -112,7 +118,7 @@ const SlideShow = ({ images }: { images: string[] }) => {
           hasTrack={false}
           options={{
             type: "loop",
-            autoplay: true,
+            autoplay,
             interval: 4500,
             speed: 600,
             easing: "cubic-bezier(0.16, 1, 0.3, 1)",

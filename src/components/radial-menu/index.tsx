@@ -9,6 +9,7 @@ import { SocketContext } from '@/contexts/socketio';
 import { useSounds } from '@/components/realtime/hooks/use-sounds';
 import { RightClickHint } from './right-click-hint';
 import { usePerfProfile } from '@/hooks/use-perf-profile';
+import { incrementReactionCount } from '@/lib/reaction-count';
 
 // Define our menu items
 const MENU_ITEMS: MenuItem[] = [
@@ -105,6 +106,9 @@ export default function RadialMenu() {
   }, [reducedMotion]);
 
   const triggerConfetti = (x: number, y: number, item: MenuItem, int: number) => {
+    void incrementReactionCount().catch((error: unknown) => {
+      console.error("Unable to record the emoji reaction.", error);
+    });
     playConfettiSound(int);
     fireConfetti(x, y, item.emoji, int);
     const cx = x - window.scrollX;

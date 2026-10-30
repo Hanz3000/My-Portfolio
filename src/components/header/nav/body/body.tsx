@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import FunnyThemeToggle from "@/components/theme/funny-theme-toggle";
+import { useLenis } from "@/lib/lenis";
+import { usePerfProfile } from "@/hooks/use-perf-profile";
+import { usePathname } from "next/navigation";
 
 interface SelectedLink {
   isActive: boolean;
@@ -27,12 +30,56 @@ export default function Body({
   setIsActive,
 }: BodyProps) {
   const params = useParams();
+  const pathname = usePathname();
+  const lenis = useLenis();
+  const { reducedMotion } = usePerfProfile();
   const [currentHref, setCurrentHref] = useState("/");
   useEffect(() => {
     if (typeof window === "undefined") return;
     const { pathname, hash } = window.location;
     setCurrentHref(pathname + hash);
   }, [params]);
+
+  const handleLinkClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    setIsActive(false);
+    if (
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    const url = new URL(href, window.location.origin);
+    if (url.pathname !== pathname || !url.hash) return;
+
+    event.preventDefault();
+    const section = document.getElementById(
+      decodeURIComponent(url.hash.slice(1))
+    );
+    if (!section) {
+      window.location.assign(`${url.pathname}${url.hash}`);
+      return;
+    }
+
+    window.history.replaceState(window.history.state, "", url.hash);
+    setCurrentHref(`${url.pathname}${url.hash}`);
+    if (lenis) {
+      lenis.scrollTo(section, {
+        duration: reducedMotion ? 0 : 2,
+        immediate: reducedMotion,
+      });
+    } else {
+      section.scrollIntoView({
+        behavior: reducedMotion ? "instant" : "smooth",
+      });
+    }
+  };
 
   const getChars = (word: string) => {
     let chars: React.JSX.Element[] = [];
@@ -66,13 +113,13 @@ export default function Body({
             href={href}
             target={target}
             className="cursor-can-hover rounded-lg"
+            onClick={(event) => handleLinkClick(event, href)}
           >
             <motion.p
               className={cn(
                 "font-display rounded-lg",
                 currentHref !== href ? "text-muted-foreground" : "underline"
               )}
-              onClick={() => setIsActive(false)}
               onMouseOver={() => setSelectedLink({ isActive: true, index })}
               onMouseLeave={() => setSelectedLink({ isActive: false, index })}
               variants={blur}

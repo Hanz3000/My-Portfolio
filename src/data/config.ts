@@ -1,5 +1,5 @@
 const config = {
-  title: "Naresh Khatri | Full-Stack Developer",
+  title: "Farhan Abdilah Ramadhan | Software Engineer",
   description: {
     long: "Explore the portfolio of Naresh, a full-stack developer and creative technologist specializing in interactive web experiences, 3D animations, and innovative projects. Discover my latest work, including Coding Ducks, The Booking Desk, Ghostchat, and more. Let's build something amazing together!",
     short:
@@ -22,8 +22,8 @@ const config = {
     "Next.js",
     "Framer Motion",
   ],
-  author: "Naresh Khatri",
-  email: "naresh.khatri2345@gmail.com",
+  author: "Farhan abdilah Ramadhan",
+  email: "Farhanabdillah501@gmail.com",
   site: "https://nareshkhatri.dev",
 
   // for github stars button
@@ -35,10 +35,11 @@ const config = {
   },
   social: {
     twitter: "https://x.com/nothotchaddi",
-    linkedin: "https://www.linkedin.com/in/naresh-khatri/",
-    instagram: "https://www.instagram.com/hotchaddi",
+    linkedin: "https://www.linkedin.com/in/farhan-abdilah-ramadhan",
+    instagram: "https://www.instagram.com/farhanrmdhan__/",
     facebook: "https://www.facebook.com/HotChaddi/",
-    github: "https://github.com/Naresh-Khatri",
+    github: "https://github.com/Hanz3000",
+    whatsapp: "https://wa.me/62881036357795",
   },
 };
 export { config };

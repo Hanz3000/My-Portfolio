@@ -1,4 +1,4 @@
-import { EXPERIENCE, SkillNames, SKILLS } from "@/data/constants";
+import { EXPERIENCE, EXTRA_SKILLS, SkillNames, SKILLS, type ExtraSkill, type ExtraSkillName } from "@/data/constants";
 import { SectionHeader } from "./section-header";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
@@ -96,7 +96,7 @@ const ExperienceCard = ({
                         )}
                       />
                     </span>
-                    {p.start} - {p.end}
+                    {p.start === p.end ? p.start : `${p.start} - ${p.end}`}
                   </li>
                 );
               })}
@@ -112,7 +112,9 @@ const ExperienceCard = ({
 
           <div className="flex flex-wrap gap-2">
             {experience.skills.map((skillName) => {
-              const skill = SKILLS[skillName as SkillNames];
+              const skill: ExtraSkill | (typeof SKILLS)[SkillNames] = skillName in EXTRA_SKILLS
+                ? EXTRA_SKILLS[skillName as ExtraSkillName]
+                : SKILLS[skillName as SkillNames];
               return (
                 <Badge
                   key={skillName}
@@ -120,11 +122,18 @@ const ExperienceCard = ({
                   className="gap-1.5 text-xs font-normal text-muted-foreground bg-secondary/30 border-transparent"
                 >
                   {/* mono until card hover -> less noise across 10+ logos */}
-                  <img
-                    src={skill.icon}
-                    alt=""
-                    className="w-3.5 h-3.5 object-contain grayscale opacity-60 transition duration-300 group-hover:grayscale-0 group-hover:opacity-100"
-                  />
+                  {"icon" in skill && skill.icon ? (
+                    <img
+                      src={skill.icon}
+                      alt=""
+                      className="w-3.5 h-3.5 object-contain grayscale opacity-60 transition duration-300 group-hover:grayscale-0 group-hover:opacity-100"
+                    />
+                  ) : "Icon" in skill && skill.Icon ? (
+                    <skill.Icon
+                      aria-hidden="true"
+                      className="w-3.5 h-3.5 opacity-60 transition duration-300 group-hover:opacity-100 group-hover:text-primary"
+                    />
+                  ) : null}
                   {skill.label}
                 </Badge>
               );

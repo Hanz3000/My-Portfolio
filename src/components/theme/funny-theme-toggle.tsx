@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 import { flushSync } from "react-dom";
 
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import { useToast } from "../ui/use-toast";
 import { themeDisclaimers } from "@/data/constants";
@@ -19,7 +19,10 @@ export default function FunnyThemeToggle({
   const { toast } = useToast();
   const ref = React.useRef<HTMLButtonElement>(null);
 
-  const toggleTheme = async (newTheme: string, event?: React.MouseEvent) => {
+  const toggleTheme = async (
+    newTheme: "light" | "dark",
+    event?: React.MouseEvent
+  ) => {
     // @ts-ignore
     if (!document.startViewTransition || !event) {
       setTheme(newTheme);

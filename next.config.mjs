@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   cacheComponents: true,
+  allowedDevOrigins: ["192.168.1.6"],
   async headers() {
     return [
       {
@@ -19,12 +20,6 @@ const nextConfig = {
         source: "/assets/(.*)",
         headers: [
           { key: "Cache-Control", value: "public, max-age=3600, must-revalidate" },
-        ],
-      },
-      {
-        source: "/_next/static/(.*)",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
     ];

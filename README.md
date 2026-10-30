@@ -29,7 +29,7 @@
 - **Easter Eggs** — Open DevTools and follow the clues 🐱
 - **Light & Dark Mode** — Full theme support with cheeky disclaimer toasts
 - **Responsive** — Works across all screen sizes
-- **Contact Form** — Email delivery via Resend
+- **Contact Form** — Opens a prefilled Gmail draft for the visitor to review and send
 - **Analytics** _(optional)_ — Umami analytics integration
 
 ## 🛠️ Tech Stack
@@ -77,10 +77,12 @@
 
     | Variable | Required | Description |
     |---|---|---|
-    | `RESEND_API_KEY` | Yes | API key from [Resend](https://resend.com) for the contact form |
     | `NEXT_PUBLIC_WS_URL` | No | WebSocket server URL for realtime features (cursors, chat, presence) |
     | `UMAMI_DOMAIN` | No | Umami analytics script URL |
     | `UMAMI_SITE_ID` | No | Umami website ID |
+
+    The contact form opens a prefilled Gmail compose window; no email API key
+    is required. The visitor reviews and sends the email from Gmail.
 
 4. **Run the development server:**
 

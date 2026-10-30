@@ -77,14 +77,14 @@ export function createKeyboardMotion(
     const mobile = window.innerWidth < 768;
     const fit = Math.min(1, window.innerWidth / window.innerHeight * 1.05);
     const [centerX, centerY, centerZ] = scene.document.camera.target;
-    const size = fit * (section === "hero" ? 0.8 : section === "contact" ? 0.75 : section === "skills" ? (mobile ? 0.88 : 1.05) : 0.95);
-    const right = !mobile && section === "hero" ? 2.5 : !mobile && section === "contact" ? 3.8 : 0;
-    const up = mobile && section === "hero" ? -1.8 : section === "contact" ? -0.8 : 0;
+    const size = fit * (section === "hero" ? 0.8 : section === "contact" ? 0.75 : section === "skills" ? (mobile ? 0.88 : 0.88) : 0.95);
+    const right = !mobile && section === "hero" ? 4.5 : !mobile && section === "contact" ? 3.8 : 0;
+    const up = mobile && section === "hero" ? -2.35 : section === "contact" ? -0.8 : 0;
     return {
-      // The placement origin is the keyboard's geometry center, independent of its labels.
+            // The placement origin is the keyboard's geometry center, independent of its labels.
       position: {
         x: centerX + right / Math.sqrt(2) + up / Math.sqrt(6),
-        y: centerY + up * Math.sqrt(2 / 3),
+        y: centerY + up * Math.sqrt(2 / 3) - (section === "skills" ? 0.9 : 0),
         z: centerZ + right / Math.sqrt(2) - up / Math.sqrt(6),
       },
       rotation: section === "projects" || (mobile && section === "contact")

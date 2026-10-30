@@ -3,8 +3,6 @@ import { config } from "@/data/config";
 import { Resend } from "resend";
 import { z } from "zod";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -26,38 +24,67 @@ const Email = z.object({
   message: z.string().min(10, "Message is too short!"),
 });
 export async function POST(req: Request) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error("Contact form is unavailable: RESEND_API_KEY is not configured.");
+    return Response.json(
+      { error: "Form kontak belum dikonfigurasi. Silakan hubungi saya langsung melalui email." },
+      { status: 503 }
+    );
+  }
+
+  let body: unknown;
   try {
-    const ip = req.headers.get("x-forwarded-for") ?? "unknown";
-    if (isRateLimited(ip)) {
-      return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
-    }
+    body = await req.json();
+  } catch (error) {
+    console.error("Contact form received invalid JSON.", error);
+    return Response.json({ error: "Permintaan formulir tidak valid." }, { status: 400 });
+  }
 
-    const body = await req.json();
-    const {
-      success: zodSuccess,
-      data: zodData,
-      error: zodError,
-    } = Email.safeParse(body);
-    if (!zodSuccess)
-      return Response.json({ error: zodError?.message }, { status: 400 });
+  const parsed = Email.safeParse(body);
+  if (!parsed.success) {
+    return Response.json({ error: parsed.error.issues[0]?.message ?? "Data formulir tidak valid." }, { status: 400 });
+  }
 
-    const { data: resendData, error: resendError } = await resend.emails.send({
-      from: "Porfolio <onboarding@resend.dev>",
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (isRateLimited(ip)) {
+    return Response.json(
+      { error: "Terlalu banyak percobaan. Silakan coba lagi satu menit lagi." },
+      { status: 429 }
+    );
+  }
+
+  try {
+    const resend = new Resend(apiKey);
+    const { data, error } = await resend.emails.send({
+      from: "Portfolio <onboarding@resend.dev>",
       to: [config.email],
-      subject: "Contact me from portfolio",
+      replyTo: parsed.data.email,
+      subject: `Portfolio contact from ${parsed.data.fullName}`,
       react: EmailTemplate({
-        fullName: zodData.fullName,
-        email: zodData.email,
-        message: zodData.message,
+        fullName: parsed.data.fullName,
+        email: parsed.data.email,
+        message: parsed.data.message,
       }) as React.ReactElement,
     });
 
-    if (resendError) {
-      return Response.json({ error: "Failed to send email" }, { status: 500 });
+    if (error) {
+      console.error("Resend rejected a portfolio contact message.", {
+        name: error.name,
+        message: error.message,
+      });
+      return Response.json(
+        { error: "Email gagal dikirim. Silakan coba lagi atau hubungi saya langsung melalui email." },
+        { status: 502 }
+      );
     }
 
-    return Response.json(resendData);
+    return Response.json({ success: true, id: data?.id });
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    console.error("Portfolio contact email request failed.", error);
+    return Response.json(
+      { error: "Layanan email sedang bermasalah. Silakan coba lagi atau hubungi saya langsung melalui email." },
+      { status: 502 }
+    );
   }
 }

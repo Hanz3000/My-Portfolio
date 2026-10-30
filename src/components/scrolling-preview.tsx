@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { usePerfProfile } from "@/hooks/use-perf-profile";
 
@@ -23,11 +24,13 @@ const FALLBACK_BG = "linear-gradient(135deg, #1e293b, #0f172a)";
  */
 const ScrollingPreview = ({
   src,
+  images,
   alt,
   bg,
   isHovered = false,
 }: {
   src: string;
+  images?: string[];
   alt: string;
   bg?: string;
   isHovered?: boolean;
@@ -36,28 +39,48 @@ const ScrollingPreview = ({
   const viewportRef = useRef<HTMLDivElement>(null);
   const [scrollPx, setScrollPx] = useState(0);
   const [bgReady, setBgReady] = useState(false);
+  const stackedImages = images && images.length > 1 ? images : undefined;
 
   useEffect(() => {
     let cancelled = false;
-    const img = new window.Image();
+    const hasStackedImages = images !== undefined && images.length > 1;
+    const sources = hasStackedImages ? images : [src];
+    const loadedImages = sources.map((source) => {
+      const image = new window.Image();
+      image.src = source;
+      return image;
+    });
     const compute = () => {
       const vp = viewportRef.current;
-      if (cancelled || !vp || !img.naturalWidth) return;
-      const ratio = img.naturalHeight / img.naturalWidth;
-      const displayedHeight = vp.clientWidth * ratio; // height at bg-size "100% auto"
+      if (
+        cancelled ||
+        !vp ||
+        loadedImages.some((image) => !image.naturalWidth)
+      ) {
+        return;
+      }
+      const displayedHeight = loadedImages.reduce(
+        (height, image) =>
+          height + vp.clientWidth * (image.naturalHeight / image.naturalWidth),
+        0
+      );
       const overflow = displayedHeight - vp.clientHeight;
-      // Only pages meaningfully taller than the frame pan; the rest go "cover".
-      setScrollPx(overflow > vp.clientHeight * MIN_SCROLL_OVERFLOW ? overflow : 0);
+      setScrollPx(
+        hasStackedImages || overflow > vp.clientHeight * MIN_SCROLL_OVERFLOW
+          ? Math.max(overflow, 0)
+          : 0
+      );
     };
-    img.onload = compute;
-    img.src = src;
-    if (img.complete) compute();
+    loadedImages.forEach((image) => {
+      image.onload = compute;
+    });
+    if (loadedImages.every((image) => image.complete)) compute();
     window.addEventListener("resize", compute);
     return () => {
       cancelled = true;
       window.removeEventListener("resize", compute);
     };
-  }, [src]);
+  }, [src, images]);
 
   // Preload the wallpaper so a missing/404 file falls back to the gradient
   // instead of rendering a broken background.
@@ -116,34 +139,68 @@ const ScrollingPreview = ({
           border: "1px solid rgba(255,255,255,0.18)",
         }}
       >
-        <motion.div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `url("${src}")`,
-            // Tall pages fill width and pan; normal images cover the frame.
-            backgroundSize: scrolls ? "100% auto" : "cover",
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: scrolls ? "50% 0%" : "center",
-          }}
-          animate={
-            animate
-              ? {
-                  backgroundPosition: isHovered ? "50% 100%" : "50% 0%",
-                }
-              : { backgroundPosition: scrolls ? "50% 0%" : "center" }
-          }
-          transition={
-            animate
-              ? {
-                  duration: isHovered
-                    ? pan
-                    : Math.min(Math.max(pan * 0.35, 0.4), 0.75),
-                  ease: isHovered ? "linear" : [0.25, 1, 0.5, 1],
-                }
-              : { duration: 0 }
-          }
-        />
+        {stackedImages ? (
+          <motion.div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+            }}
+            animate={{ y: animate && isHovered ? -scrollPx : 0 }}
+            transition={
+              animate
+                ? {
+                    duration: isHovered
+                      ? pan
+                      : Math.min(Math.max(pan * 0.35, 0.4), 0.75),
+                    ease: isHovered ? "linear" : [0.25, 1, 0.5, 1],
+                  }
+                : { duration: 0 }
+            }
+          >
+            {stackedImages.map((image) => (
+              <Image
+                key={image}
+                src={image}
+                alt=""
+                width={1600}
+                height={1000}
+                sizes="(max-width: 768px) 100vw, 400px"
+                aria-hidden="true"
+                style={{ display: "block", width: "100%", height: "auto" }}
+              />
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `url("${src}")`,
+              backgroundSize: scrolls ? "100% auto" : "cover",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: scrolls ? "50% 0%" : "center",
+            }}
+            animate={
+              animate
+                ? {
+                    backgroundPosition: isHovered ? "50% 100%" : "50% 0%",
+                  }
+                : { backgroundPosition: scrolls ? "50% 0%" : "center" }
+            }
+            transition={
+              animate
+                ? {
+                    duration: isHovered
+                      ? pan
+                      : Math.min(Math.max(pan * 0.35, 0.4), 0.75),
+                    ease: isHovered ? "linear" : [0.25, 1, 0.5, 1],
+                  }
+                : { duration: 0 }
+            }
+          />
+        )}
       </div>
     </div>
   );

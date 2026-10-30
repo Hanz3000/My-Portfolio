@@ -49,6 +49,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
                 the wallpaper is an optional /assets/backgrounds/<id>.jpg. */}
             <ScrollingPreview
               src={project.src}
+              images={project.previewImages}
               alt={project.title}
               bg={`/assets/backgrounds/${project.id}.jpg`}
               isHovered={isHovered}
@@ -68,18 +69,18 @@ const ProjectCard = ({ project }: { project: Project }) => {
 
         <ResponsiveDialogContent className="md:max-w-4xl md:h-[85vh] md:!flex md:flex-col md:overflow-hidden md:p-0 md:gap-0">
           {/* Sticky header */}
-          <div className="shrink-0 border-b border-border bg-background/80 backdrop-blur-sm px-8 py-5">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4 min-w-0">
-                <h4 className="font-display text-xl md:text-2xl font-bold text-foreground tracking-tight truncate">
+          <div className="shrink-0 border-b border-border bg-background/80 px-4 py-4 backdrop-blur-sm md:px-8 md:py-5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 flex-wrap items-center gap-2 md:flex-nowrap md:gap-4">
+                <h4 className="max-w-[42vw] truncate font-display text-lg font-bold tracking-tight text-foreground md:max-w-none md:text-2xl">
                   {project.title}
                 </h4>
-                <span className="shrink-0 text-[11px] uppercase tracking-widest text-muted-foreground border border-border rounded-full px-3 py-0.5">
+                <span className="max-w-[48vw] truncate rounded-full border border-border px-2 py-0.5 text-[8px] uppercase tracking-widest text-muted-foreground md:max-w-none md:shrink-0 md:px-3 md:text-[11px]">
                   {project.category}
                 </span>
               </div>
-              <div className="shrink-0 flex items-center gap-4">
-                {project.github && project.github !== "#" && (
+              <div className="flex shrink-0 items-center gap-3 md:gap-4">
+                {project.github && project.github !== "#" ? (
                   <Link
                     href={project.github}
                     target="_blank"
@@ -87,7 +88,11 @@ const ProjectCard = ({ project }: { project: Project }) => {
                   >
                     Source
                   </Link>
-                )}
+                ) : project.showSource ? (
+                  <span className="text-xs text-muted-foreground underline underline-offset-2">
+                    Source
+                  </span>
+                ) : null}
                 {project.live && project.live !== "#" && (
                   <Link href={project.live} target="_blank">
                     <button className="group flex items-center gap-2 bg-primary text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full hover:bg-primary/80 transition-colors">
@@ -101,29 +106,39 @@ const ProjectCard = ({ project }: { project: Project }) => {
           </div>
 
           {/* Scrollable content */}
-          <ScrollArea className="flex-1" type="always" data-lenis-prevent>
-            <div className="px-8 py-8">
+          <ScrollArea className="min-h-0 flex-1" type="always" data-lenis-prevent>
+            <div className="min-w-0 px-4 py-6 md:px-8 md:py-8">
               {/* Tech stack */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
-                className="flex flex-col md:flex-row gap-6 md:gap-10 mb-10"
+                className="mb-8 flex min-w-0 flex-col gap-6 overflow-hidden md:mb-10 md:flex-row md:gap-10"
               >
                 {project.skills.frontend?.length > 0 && (
-                  <div className="flex flex-col items-center md:items-start gap-2">
+                  <div className="flex min-w-0 max-w-full flex-col items-center gap-2 md:items-start">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
                       Frontend
                     </span>
-                    <FloatingDock items={project.skills.frontend} />
+                    <div className="w-full max-w-full overflow-x-auto">
+                      <FloatingDock
+                        items={project.skills.frontend}
+                        desktopClassName="mx-0 shrink-0"
+                      />
+                    </div>
                   </div>
                 )}
                 {project.skills.backend?.length > 0 && (
-                  <div className="flex flex-col items-center md:items-start gap-2">
+                  <div className="flex min-w-0 max-w-full flex-col items-center gap-2 md:items-start">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
                       Backend
                     </span>
-                    <FloatingDock items={project.skills.backend} />
+                    <div className="w-full max-w-full overflow-x-auto">
+                      <FloatingDock
+                        items={project.skills.backend}
+                        desktopClassName="mx-0 shrink-0"
+                      />
+                    </div>
                   </div>
                 )}
               </motion.div>
@@ -137,7 +152,9 @@ const ProjectCard = ({ project }: { project: Project }) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                {project.content}
+                <div className="min-w-0 break-words [&_*]:max-w-full [&_img]:h-auto">
+                  {project.content}
+                </div>
               </motion.div>
             </div>
           </ScrollArea>

@@ -1,7 +1,4 @@
 import React, { Suspense } from "react";
-import Link from "next/link";
-import { footer } from "./config";
-import { Button } from "../ui/button";
 import SocialMediaButtons from "../social/social-media-icons";
 import { config } from "@/data/config";
 
@@ -12,30 +9,17 @@ function CopyrightYear() {
 
 function Footer() {
   return (
-    <footer className="flex w-full shrink-0 flex-col items-center gap-2 border-t border-border px-4 py-6 sm:flex-row md:px-6 sm:justify-between">
-      <p className="text-xs text-gray-500 dark:text-gray-400">
+    <footer className="relative z-40 grid w-full shrink-0 grid-cols-1 items-center justify-items-center gap-3 border-t border-border px-4 py-6 md:grid-cols-[1fr_auto_1fr] md:justify-items-stretch md:px-6">
+      <p className="text-center text-xs text-gray-500 dark:text-gray-400 md:justify-self-start md:text-left">
         ©{" "}
         <Suspense fallback={null}>
           <CopyrightYear />
         </Suspense>{" "}
         {config.author}. All rights reserved.
       </p>
-      <SocialMediaButtons />
-      <nav className="flex gap-4 sm:gap-6 z-10">
-        {footer.map((link, index) => {
-          const { title, href } = link;
-
-          return (
-            <Link
-              className="text-xs underline-offset-4 hover:underline"
-              href={href}
-              key={`l_${index}`}
-            >
-              <Button variant={"link"}>{title}</Button>
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="justify-self-center md:col-start-2">
+        <SocialMediaButtons />
+      </div>
     </footer>
   );
 }

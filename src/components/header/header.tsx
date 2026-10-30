@@ -12,14 +12,13 @@ import { Button } from "../ui/button";
 import { config } from "@/data/config";
 import OnlineUsers from "../realtime/online-users";
 import { GameTrigger } from "../game/game-trigger";
+import ReactionCount from "./reaction-count";
 
 interface HeaderProps {
   loader?: boolean;
-  // server-rendered slot; client header can't fetch it itself without a mount-time shift
-  githubStars?: React.ReactNode;
 }
 
-const Header = ({ loader, githubStars }: HeaderProps) => {
+const Header = ({ loader }: HeaderProps) => {
   const [isActive, setIsActive] = useState<boolean>(false);
   const isHome = usePathname() === "/";
   return (
@@ -44,13 +43,6 @@ const Header = ({ loader, githubStars }: HeaderProps) => {
         duration: 0.8,
       }}
     >
-      {/* <div
-        className="absolute inset-0 "
-        style={{
-          mask: "linear-gradient(rgb(0, 0, 0) 0%, rgba(0, 0, 0, 0) 12.5%)",
-        }}
-      >
-      </div> */}
       <div className={cn(styles.bar, "flex items-center justify-between")}>
         <Link href="/" className="flex items-center justify-center">
           <Button variant={"link"} className="text-md">
@@ -65,7 +57,7 @@ const Header = ({ loader, githubStars }: HeaderProps) => {
             <OnlineUsers />
           </div>
         )}
-        {githubStars}
+        <ReactionCount />
         <Button
           variant={"ghost"}
           onClick={() => setIsActive(!isActive)}
